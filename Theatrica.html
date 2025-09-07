@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<link rel="stylesheet" href="Theatrica.css">
+<title>Theatrica — Smart Cinema E‑Commerce</title>
+
+</head>
+<body>
+
+<header>
+  <div class="wrap topbar">
+    <div class="brand"><i></i><span>Theatrica</span></div>
+    <div class="row" style="flex:1;max-width:520px">
+      <input id="q" placeholder="Search movies, snacks, merch…" />
+      <button class="btn sec" onclick="ui.search()">Search</button>
+    </div>
+    <nav>
+      <button id="navHome" class="active" onclick="ui.show('home')">Home</button>
+      <button onclick="ui.show('catalog')">Shop</button>
+      <button onclick="ui.show('cart')">Cart (<span id="cartCount">0</span>)</button>
+      <button onclick="ui.show('orders')">Orders</button>
+      <button onclick="ui.show('support')">Support</button>
+      <button onclick="ui.show('account')"><span id="who">Sign in</span></button>
+      <button onclick="ui.show('admin')">Admin</button>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap">
+    <h1>Book seats. Order snacks. Grab merch.</h1>
+    <div class="muted">Seamless from browsing to checkout — built with modular, API‑first architecture ready for AI, AR, wallets and 3PL.</div>
+    <div class="row" style="margin-top:12px">
+      <button class="btn" onclick="ui.show('catalog');ui.quick('Tickets')">Browse Tickets</button>
+      <button class="btn sec" onclick="ui.show('catalog');ui.quick('Snacks')">Snacks & Combos</button>
+      <span class="pill">Goal: 90%+ satisfaction ⭐</span>
+      <span class="pill">Mission‑driven 🎬</span>
+    </div>
+  </div>
+</section>
+
+<main class="wrap grid" style="padding:18px 16px" id="views">
+
+  <!-- HOME -->
+  <div id="view-home" class="grid">
+    <div class="grid" style="grid-template-columns:2fr 1fr;gap:16px">
+      <div class="panel">
+        <h3 style="margin:0 0 8px">Now Showing Highlights</h3>
+        <div class="grid catalog" id="homeHighlights"></div>
+      </div>
+      <div class="panel">
+        <h3 style="margin:0 0 8px">Promos</h3>
+        <div class="card">🎁 <b>Family Snack Set</b> 10% off at checkout.</div>
+        <div class="card">⚡ <b>Fast Pass</b> add‑on available for premiere night.</div>
+        <div class="card">💜 VIP <b>Digital Membership</b> earns 2× points this week.</div>
+      </div>
+    </div>
+    <div class="panel">
+      <h3 style="margin:0 0 8px">Categories</h3>
+      <div class="row">
+        <button class="btn sec" onclick="ui.show('catalog');ui.quick('Tickets')">Tickets</button>
+        <button class="btn sec" onclick="ui.show('catalog');ui.quick('Snacks')">Snacks & Beverages</button>
+        <button class="btn sec" onclick="ui.show('catalog');ui.quick('Merch')">Merch & Collectibles</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CATALOG -->
+  <div id="view-catalog" class="grid hide">
+    <div class="panel">
+      <div class="row">
+        <select id="cat">
+          <option value="">All categories</option>
+          <option>Tickets</option><option>Snacks</option><option>Merch</option>
+        </select>
+        <select id="filterAttr">
+          <option value="">Attribute (size/seat/type)</option>
+          <option value="VIP">VIP</option>
+          <option value="Standard">Standard</option>
+          <option value="Combo">Combo</option>
+        </select>
+        <select id="sort">
+          <option value="pop">Sort: Popular</option>
+          <option value="new">Sort: New</option>
+          <option value="name">Sort: Name</option>
+          <option value="priceAsc">Price: Low → High</option>
+          <option value="priceDesc">Price: High → Low</option>
+        </select>
+        <button class="btn" onclick="catalog.render()">Apply</button>
+      </div>
+    </div>
+    <div class="grid catalog" id="catalogList"></div>
+  </div>
+
+  <!-- PRODUCT DETAIL -->
+  <div id="view-detail" class="grid hide">
+    <div class="panel" id="detail"></div>
+    <div class="panel">
+      <h3>Reviews & Ratings</h3>
+      <div id="reviews"></div>
+      <div id="addReview" class="card">
+        <div class="row">
+          <select id="revStars">
+            <option value="5">★★★★★</option>
+            <option value="4">★★★★☆</option>
+            <option value="3">★★★☆☆</option>
+            <option value="2">★★☆☆☆</option>
+            <option value="1">★☆☆☆☆</option>
+          </select>
+          <input id="revText" placeholder="Share your thoughts…" />
+          <button class="btn" onclick="reviews.submit()">Submit</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CART + CHECKOUT -->
+  <div id="view-cart" class="grid hide">
+    <div class="panel">
+      <h3>Your Cart</h3>
+      <div id="cartItems"></div>
+      <div class="row" style="justify-content:space-between;margin-top:10px">
+        <div class="muted mini">Tip: quantities & notes are editable.</div>
+        <div><b>Subtotal:</b> <span id="cartSubtotal" class="price">₱0.00</span></div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="tabs">
+        <button id="step1" class="on" onclick="checkout.step(1)">1 • Shipping</button>
+        <button id="step2" onclick="checkout.step(2)">2 • Payment</button>
+        <button id="step3" onclick="checkout.step(3)">3 • Review</button>
+      </div>
+      <div id="co1" class="grid">
+        <div class="row">
+          <input id="shipName" placeholder="Full name" />
+          <input id="shipPhone" placeholder="Mobile" />
+        </div>
+        <input id="shipAddr" placeholder="Address (for delivery to seat or home)" />
+        <div class="row">
+          <select id="shipMethod">
+            <option value="pickup">Pick up at counter</option>
+            <option value="seat">Deliver to seat</option>
+            <option value="3pl">3PL Delivery (Grab/Lalamove)</option>
+          </select>
+          <button class="btn right" onclick="checkout.step(2)">Continue</button>
+        </div>
+      </div>
+      <div id="co2" class="grid hide">
+        <div class="row">
+          <select id="payMethod">
+            <option value="gcash">GCash</option>
+            <option value="maya">Maya</option>
+            <option value="card">Credit/Debit (PCI‑simulated)</option>
+            <option value="apple">Apple Pay</option>
+            <option value="google">Google Pay</option>
+          </select>
+          <input id="payEmail" placeholder="Receipt email" />
+          <button class="btn right" onclick="checkout.step(3)">Continue</button>
+        </div>
+        <div class="muted mini">Payments are sandbox‑simulated. No real charges.</div>
+      </div>
+      <div id="co3" class="grid hide">
+        <div id="reviewBlock"></div>
+        <div class="row">
+          <button class="btn sec" onclick="checkout.step(2)">Back</button>
+          <button class="btn ok right" onclick="checkout.place()">Place Order</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ORDERS -->
+  <div id="view-orders" class="grid hide">
+    <div class="panel">
+      <h3>Order History & Tracking</h3>
+      <table class="table" id="orderTable"></table>
+    </div>
+  </div>
+
+  <!-- SUPPORT -->
+  <div id="view-support" class="grid hide">
+    <div class="panel">
+      <h3>Contact & FAQ</h3>
+      <div class="grid" style="grid-template-columns:2fr 1fr;gap:16px">
+        <div class="card">
+          <div class="row">
+            <input id="supName" placeholder="Your name" />
+            <input id="supEmail" placeholder="Email" />
+          </div>
+          <textarea id="supMsg" rows="4" placeholder="How can we help?"></textarea>
+          <div class="row"><button class="btn" onclick="support.send()">Send</button><span id="supStatus" class="muted mini"></span></div>
+        </div>
+        <div class="grid">
+          <div class="card"><b>Refunds</b><br><span class="muted mini">Requests within 24h of screening are auto‑approved for VIP members.</span></div>
+          <div class="card"><b>Delivery</b><br><span class="muted mini">3PL ETA 30‑60 mins. You’ll get real‑time status updates.</span></div>
+          <div class="card"><b>Security</b><br><span class="muted mini">We follow privacy‑by‑design & mock PCI‑DSS controls.</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACCOUNT -->
+  <div id="view-account" class="grid hide">
+    <div class="panel">
+      <div class="tabs">
+        <button id="acctTab1" class="on" onclick="account.show('login')">Login</button>
+        <button id="acctTab2" onclick="account.show('profile')">Profile</button>
+        <button id="acctTab3" onclick="account.show('wishlist')">Wishlist</button>
+        <button id="acctTab4" onclick="account.show('notifications')">Notifications</button>
+      </div>
+      <div id="acct-login" class="grid">
+        <div class="row">
+          <input id="loginEmail" placeholder="Email" />
+          <input id="loginPass" placeholder="Password" type="password" />
+          <button class="btn" onclick="account.login()">Sign in</button>
+          <button class="btn sec" onclick="account.register()">Register</button>
+        </div>
+        <div class="muted mini">Demo users: <code>user@demo.com / demo</code> or create your own.</div>
+      </div>
+      <div id="acct-profile" class="grid hide">
+        <div class="row">
+          <input id="profName" placeholder="Full name" />
+          <input id="profPhone" placeholder="Mobile" />
+        </div>
+        <input id="profAddr" placeholder="Default address" />
+        <div class="row">
+          <button class="btn ok" onclick="account.save()">Save</button>
+          <button class="btn bad" onclick="account.logout()">Sign out</button>
+          <span class="right muted mini" id="acctMsg"></span>
+        </div>
+      </div>
+      <div id="acct-wishlist" class="grid hide"><div id="wishList" class="grid catalog"></div></div>
+      <div id="acct-notifications" class="grid hide"><div id="notifList"></div></div>
+    </div>
+  </div>
+
+  <!-- ADMIN -->
+  <div id="view-admin" class="grid hide">
+    <div class="panel">
+      <div class="tabs">
+        <button class="on" id="adTab-login" onclick="admin.show('login')">Login</button>
+        <button id="adTab-prod" onclick="admin.show('products')">Products</button>
+        <button id="adTab-orders" onclick="admin.show('orders')">Orders</button>
+        <button id="adTab-inv" onclick="admin.show('inventory')">Inventory</button>
+        <button id="adTab-users" onclick="admin.show('users')">Users</button>
+        <button id="adTab-cms" onclick="admin.show('cms')">CMS</button>
+        <button id="adTab-sets" onclick="admin.show('settings')">Settings</button>
+        <button id="adTab-reps" onclick="admin.show('reports')">Reports</button>
+        <button id="adTab-notif" onclick="admin.show('notify')">Notifications</button>
+        <button id="adTab-audit" onclick="admin.show('audit')">Audit</button>
+      </div>
+
+      <!-- Admin Login -->
+      <div id="admin-login" class="grid">
+        <div class="row">
+          <input id="adEmail" placeholder="Admin email" />
+          <input id="adPass" type="password" placeholder="Password" />
+          <button class="btn" onclick="admin.login()">Enter</button>
+        </div>
+        <div class="muted mini">Demo admin: <code>admin@theatrica.io / admin</code></div>
+      </div>
+
+      <!-- Products -->
+      <div id="admin-products" class="grid hide">
+        <div class="row">
+          <input id="pName" placeholder="Product name" />
+          <input id="pPrice" placeholder="Price (₱)" type="number" />
+          <select id="pCat"><option>Tickets</option><option>Snacks</option><option>Merch</option></select>
+          <input id="pAttr" placeholder="Attribute (VIP/Combo/Standard…)" />
+          <input id="pImg" placeholder="Image URL" />
+          <button class="btn ok" onclick="admin.addProduct()">Add</button>
+        </div>
+        <table class="table" id="adminProdTable"></table>
+      </div>
+
+      <!-- Orders -->
+      <div id="admin-orders" class="grid hide"><table class="table" id="adminOrderTable"></table></div>
+
+      <!-- Inventory -->
+      <div id="admin-inventory" class="grid hide">
+        <table class="table" id="invTable"></table>
+        <div id="lowStock" class="card hide">⚠ Low stock alerts will appear here.</div>
+      </div>
+
+      <!-- Users -->
+      <div id="admin-users" class="grid hide"><table class="table" id="userTable"></table></div>
+
+      <!-- CMS -->
+      <div id="admin-cms" class="grid hide">
+        <div class="row">
+          <input id="cmsPage" placeholder="Page (About/Contact/FAQ/Privacy)" />
+          <input id="cmsContent" placeholder="Content…" />
+          <button class="btn ok" onclick="admin.savePage()">Save Page</button>
+        </div>
+        <div id="cmsList"></div>
+      </div>
+
+      <!-- Settings -->
+      <div id="admin-settings" class="grid hide">
+        <div class="row">
+          <select id="setCurrency"><option value="PHP">PHP</option><option value="USD">USD</option></select>
+          <select id="setShip"><option>pickup</option><option>seat</option><option>3pl</option></select>
+          <select id="setPay"><option>gcash</option><option>maya</option><option>card</option><option>apple</option><option>google</option></select>
+          <button class="btn ok" onclick="admin.saveSettings()">Save</button>
+        </div>
+        <div class="muted mini">Security Architecture: mock settings stored with checksum; changes logged in audit.</div>
+      </div>
+
+      <!-- Reports -->
+      <div id="admin-reports" class="grid hide">
+        <div class="kpi">
+          <div class="card"><div class="muted mini">Total Revenue</div><div id="kpiRevenue" class="price">₱0</div></div>
+          <div class="card"><div class="muted mini">Orders</div><div id="kpiOrders">0</div></div>
+          <div class="card"><div class="muted mini">Avg. Rating</div><div id="kpiRating">0.0</div></div>
+          <div class="card"><div class="muted mini">Active Users</div><div id="kpiUsers">0</div></div>
+        </div>
+      </div>
+
+      <!-- Notifications -->
+      <div id="admin-notify" class="grid hide">
+        <div class="row">
+          <input id="nTitle" placeholder="Notification title" />
+          <input id="nBody" placeholder="Message" />
+          <button class="btn ok" onclick="admin.broadcast()">Broadcast</button>
+        </div>
+        <div id="adminNotifList"></div>
+      </div>
+
+      <!-- Audit -->
+      <div id="admin-audit" class="grid hide"><div id="auditList"></div></div>
+
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  © Theatrica — Smart Cinemas • Built for IT009 Systems Integration & Architecture (modular, API‑first, event‑driven, SOA micro‑features)
+</footer>
+
+<script src="Theatrica.js"></script>
+</body>
+</html>
